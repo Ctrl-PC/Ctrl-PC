@@ -1,455 +1,505 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<html>
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<title>Flappy Bird</title>
+    <title>Flappy Bird</title>
+    <style>
+        body {
+            background: #5c5c5c;
+        }
+        canvas {
+            display: block;
+            margin: 70px auto;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+             user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            outline: none;
+        }
+        img.asset {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<a href="https://github.com/fatiherikli/flappybird">
+    <img style="position: absolute; top: 0; right: 0; border: 0;"
+         src="https://github-camo.global.ssl.fastly.net/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67"
+         alt="Fork me on GitHub"
+         data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
+</a>
+<!-- preload images -->
+<img class="asset" src="assets/bird.png" />
+<img class="asset" src="assets/cloud.png" />
+<img class="asset" src="assets/ground.png" />
+<img class="asset" src="assets/pipe.png" />
+<canvas width="800" height="500" id="canvas" tabindex="1"></canvas>
+<script src="vendor/libs/class.js"></script>
+<script>
 
-<meta name="description" content="Play Flappy Bird for free online in HTML5">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="/cdn-cgi/apps/head/WKDYFB8Mtoa5H6LQn2VLdZqvqfk.js"></script><script src="http://www.createjs.com/Demos/EaselJS/assets/preloadjs-NEXT.min.js"></script>
-<script src="http://code.createjs.com/createjs-2013.09.25.min.js"></script>
-<script src="ndgmr.Collision.js"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<meta name="google-site-verification" content="-4F7qHkO2bPmzbdg5OYmG9Ig4lCASIww4qXGlECOu0Q" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="apple-touch-icon-precomposed" href="img/apple-icon.png" />
+    var flappybird = {};
 
-<style type="text/css">
+    flappybird.Pipe = Class.extend({
 
-            @font-face {
-                font-family: 'Flappy Bird';
-                src: url('fonts/FB.eot');
-                src: url('fonts/FB.eot?#iefix') format('embedded-opentype'),
-                     url('fonts/FB.woff') format('woff'),
-                     url('fonts/FB.ttf') format('truetype'),
-                     url('fonts/FB.svg#04b_19regular') format('svg');
-                font-weight: normal;
-                font-style: normal;
-            }
-            body, html {
-                margin: 0px;
-                padding: 0px;
-                text-align: center;
-                height: 100%;
-                overflow: hidden;
-            }
-            canvas {
-                position: relative;
-                margin-bottom: -4px;
-                max-height: 100%;
-                max-width: 100%;
-                z-index: 1;
-            }
-            iframe {
-                position: fixed;
-                top: 0px;
-                left: 50%;
-                margin-left: -76px;
-                z-index: 2;
-            }
-            .filler {
-                width: 100%;
-                height: 0px;
-            }
-            .top.filler {
-                background-color: ;
-            }
-            .bottom.filler {
-                background-color: ;
-            }
-            .ad-container {
-                z-index: 0;
-            }
-            .ad-container iframe {
-                right: 0px;
-                left: inherit;
-                position: absolute;
-                z-index: 0;
-            }
-            @media (max-width:768px){
-                .ad-container {
-                    display: none;
-                }
-            }
-        </style>
-<script type="text/javascript">
+        width: 72,
+        height: 180,
 
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        speed: 2.5,
 
-            ga('create', 'UA-47910027-1', 'flappybird.io');
-            ga('send', 'pageview');
+        order: 0,
 
+        init: function (stage, placement, x, h) {
+            this.stage = stage;
+            this.placement = placement;
+            this.height = h;
+            this.x = x || 0;
+            this.y = 0;
 
-            var outerPadding = (1362 - 1024)/2;
-            // var outerPadding = 0
-
-            // function setHeight() {
-            //     // if ($('canvas').height() < $(window.top).height()) {
-            //         var difference = $(window.top).height() - $('canvas').height()
-            //         $('canvas').css({marginTop : difference/2})
-            //     // }
-            // }
-            // $(window).resize(function() {
-            //     setHeight()
-            // })
-
-            // http://createjs.com/#!/TweenJS/demos/sparkTable
-            // http://createjs.com/Docs/TweenJS/modules/TweenJS.html
-            // view-source:http://createjs.com/Demos/EaselJS/Game.html COPY THIS
-            var stage, w, h, loader, pipe1height, pipe2height, pipe3height, startX, startY, wiggleDelta, topFill;
-            var background, bird, ground, pipe, bottomPipe, pipes, rotationDelta, counter, counterOutline;
-            var started = false; 
-            var startJump = false; // Has the jump started?
-
-            var jumpAmount = 120; // How high is the jump?
-            var jumpTime = 266;
-
-            var dead = false; // is the bird dead?
-            var KEYCODE_SPACE = 32;     //usefull keycode
-            var gap = 250;
-            var masterPipeDelay = 78; // delay between pipes
-            var pipeDelay = masterPipeDelay; //counter used to monitor delay
-
-        
-
-            var counterShow = false;
-
-            document.onkeydown = handleKeyDown;
-
-            function init() {
-                if (window.top != window) {
-                    document.getElementById("header").style.display = "none";
-                }
-
-
-                // createjs.MotionGuidePlugin.install();
-
-                stage = new createjs.Stage("testCanvas");
-
-                createjs.Touch.enable(stage);
-                // stage.canvas.width = document.body.clientWidth; //document.width is obsolete
-                // stage.canvas.height = document.body.clientHeight; //document.height is obsolete
-                
-                // grab canvas width and height for later calculations:
-                w = stage.canvas.width;
-                h = stage.canvas.height;
-
-                manifest = [
-                    {src:"img/bird.png", id:"bird"},
-                    {src:"img/background.png", id:"background"},
-                    {src:"img/ground.png", id:"ground"},
-                    {src:"img/pipe.png", id:"pipe"},
-                    {src:"img/restart.png", id:"start"},
-                    {src:"img/share.png", id:"share"},
-                    {src:"fonts/FB.eot"},
-                    {src:"fonts/FB.svg"},
-                    {src:"fonts/FB.ttf"},
-                    {src:"fonts/FB.woff"}
-                ];
-
-                loader = new createjs.LoadQueue(false);
-                loader.addEventListener("complete", handleComplete);
-                loader.loadManifest(manifest);
+            if (this.placement == flappybird.BOTTOM) {
+                this.y = stage.height - this.height;
             }
 
-            function handleComplete() {
-                
-                background = new createjs.Shape();
-                background.graphics.beginBitmapFill(loader.getResult("background")).drawRect(0,0,w,h);
-                background.y = 0 + outerPadding
-                
-                var groundImg = loader.getResult("ground");
-                ground = new createjs.Shape();
-                ground.graphics.beginBitmapFill(groundImg).drawRect(0, 0, w+groundImg.width, groundImg.height);
-                ground.tileW = groundImg.width;
-                ground.y = h-groundImg.height-outerPadding;
-                
-            
-                var data = new createjs.SpriteSheet({
-                    "images": [loader.getResult("bird")],
-                    //set center and size of frames, center is important for later bird roation
-                    "frames": {"width": 92, "height": 64, "regX": 46, "regY": 32, "count": 3}, 
-                    // define two animations, run (loops, 0.21x speed) and dive (returns to dive and holds frame one static):
-                    "animations": {"fly": [0, 2, "fly", 0.21], "dive": [1, 1, "dive", 1]}
-                });
-                bird = new createjs.Sprite(data, "fly");
+            this.img = new Image();
+            this.img.src = 'assets/pipe.png';
 
-                startX = (w/2) - (92/2)
-                startY = 512 + outerPadding
-                wiggleDelta = 18
+        },
 
-                // Set initial position and scale 1 to 1
-                bird.setTransform(startX, startY, 1, 1);
-                // Set framerate
-                bird.framerate = 30;
+        update: function () {
+            this.x -= this.speed;
+        },
 
-                //338, 512
-                // Use a tween to wiggle the bird up and down using a sineInOut Ease
-                createjs.Tween.get(bird, {loop:true}).to({y:startY + wiggleDelta}, 380, createjs.Ease.sineInOut).to({y:startY}, 380, createjs.Ease.sineInOut);
+        draw: function () {
+            var context = this.stage.context,
+                pattern = context.createPattern(this.img, "repeat");
 
-                stage.addChild(background);
-                
-                // Add padding to the top to make up for the small background graphic
-                topFill = new createjs.Graphics()
-                topFill.beginFill("#70c5ce").rect(0, 0, w, outerPadding); //color of the sky
-                topFill = new createjs.Shape(topFill)
-                stage.addChild(topFill)
+            context.fillStyle = pattern;
 
-                pipes = new createjs.Container(); 
-                stage.addChild(pipes)
+            // save the current position of canvas
+            context.save();
 
-                stage.addChild(bird, ground);
-                stage.addEventListener("stagemousedown", handleJumpStart);
+            var yAddition = 0;
 
-
-                // Same thing as topFill on the bottom, but after the bird, ground 
-                // and pipes because they'll always be behind this layer
-                bottomFill = new createjs.Graphics()
-                bottomFill.beginFill("#ded895").rect(0, h - outerPadding, w, outerPadding); //color of the ground
-                bottomFill = new createjs.Shape(bottomFill)
-                stage.addChild(bottomFill)
-
-
-                counter = new createjs.Text(0, "86px 'Flappy Bird'", "#ffffff");
-                counterOutline = new createjs.Text(0, "86px 'Flappy Bird'", "#000000");
-                counterOutline.outline = 5
-                counterOutline.textAlign = 'center'
-                counter.textAlign = 'center'
-                counterOutline.x = w/2
-                counterOutline.y = 150 + outerPadding
-                counter.x = w/2
-                counter.y = 150 + outerPadding
-                counter.alpha = 1
-                counterOutline.alpha = 1
-                stage.addChild(counter, counterOutline)
-
-                createjs.Ticker.timingMode = createjs.Ticker.RAF;
-                createjs.Ticker.addEventListener("tick", tick);
-
-                setHeight()
-
+            if (this.placement == flappybird.BOTTOM) {
+                yAddition = 20;
             }
 
-            function handleKeyDown(e) {
-                //cross browser issues exist
-                if(!e){ var e = window.event; }
-                switch(e.keyCode) {
-                    case KEYCODE_SPACE: handleJumpStart();
+            context.translate(
+                this.x + 4,
+                this.y + yAddition
+            );
+
+            context.fillRect(0, 0, this.width - 8, this.height - 20);
+
+            context.fillStyle = "#6e217d";
+
+            if (this.placement == flappybird.BOTTOM) {
+                context.translate(0, -this.height);
+            }
+
+            context.fillRect(-4, this.height - 20, this.width, 20);
+
+            // restore canvas position
+            context.restore();
+
+
+        }
+    });
+
+    flappybird.Bird = Class.extend({
+
+        width: 35,
+        height: 30,
+
+        x: 100,
+        y: 200,
+
+        states: {
+            FLY: 0,
+            RISE: 1,
+            FALL: 2
+        },
+
+        vertSpeed: 0,
+        flapState: 0,
+        defaultRotation: 0.8,
+        minRotation: 0.1,
+
+        init: function (stage) {
+            this.stage = stage;
+            this.stage.canvas.addEventListener('mousedown', this.flap.bind(this));
+            this.stage.canvas.addEventListener('keydown', this.flap.bind(this));
+
+            this.img = new Image();
+            this.img.src = 'assets/bird.png';
+
+            this.flapState = 0;
+            this.rotation = this.defaultRotation;
+            this.state = this.states.FLY;
+
+        },
+
+        update: function () {
+
+            if (this.stage.position % 5 == 0) {
+                if (++this.flapState == 4) {
+                    this.flapState = 0
                 }
             }
 
-            function handleJumpStart() {
-                if (!dead) {
-                    createjs.Tween.removeTweens ( bird )
-                    bird.gotoAndPlay("jump");
-                    startJump = true
-                    if (!started) {
-                        started = true
-                        counterShow = true                        
-                    }
+            if (this.stage.state == this.stage.states.GAME_OVER) {
+                this.vertSpeed = 10;
+                this.rotation += 0.3;
+            }
+
+            this.y += this.vertSpeed;
+
+            this.vertSpeed += 0.6;
+
+            if (this.state == this.states.RISE) {
+                if (this.rotation >= this.minRotation) {
+                    this.rotation -= 0.4;
+                }
+
+                if (this.flapStartPosition + 10 < this.stage.position) {
+                    this.state = this.states.FALL;
                 }
             }
 
-            function diveBird() {
-                bird.gotoAndPlay("dive");
-            }
-
-            function restart() {
-                //hide anything on stage and show the score
-                pipes.removeAllChildren();
-                createjs.Tween.get(start).to({y:start.y + 10}, 50).call(removeStart)
-                counter.text = 0
-                counterOutline.text = 0
-                counterOutline.alpha = 0
-                counter.alpha = 0
-                counterShow = false
-                pipeDelay = masterPipeDelay
-                dead = false
-                started = false
-                startJump = false
-                createjs.Tween.removeTweens ( bird )
-                bird.x = startX
-                bird.y = startY
-                bird.rotation = 0
-                createjs.Tween.get(bird, {loop:true}).to({y:startY + wiggleDelta}, 380, createjs.Ease.sineInOut).to({y:startY}, 380, createjs.Ease.sineInOut);
-            }
-
-            function die() {
-                dead = true
-                bird.gotoAndPlay("dive");
-
-                ga('send', 'event', "Flappy Bird", "Score", counter.text, counter.text)
-
-                createjs.Tween.removeTweens ( bird )
-                createjs.Tween.get(bird).wait(0).to({y:bird.y + 200, rotation: 90}, (380)/1.5, createjs.Ease.linear) //rotate back
-                        .call(diveBird) // change bird to diving position
-                        .to({y:ground.y - 30}, (h - (bird.y+200))/1.5, createjs.Ease.linear); //drop to the bedrock
-                createjs.Tween.get(stage).to({alpha:0}, 100).to({alpha:1}, 100)
-                start = new createjs.Bitmap(loader.getResult("start"));
-                start.alpha = 0
-                start.x = w/2 - start.image.width/2
-                start.y = h/2 - start.image.height/2 - 150
-                share = new createjs.Bitmap(loader.getResult("share"));
-                share.alpha = 0
-                share.x = w/2 - share.image.width/2
-                share.y = h/2 - share.image.height/2 - 50
-
-                stage.addChild(start)
-                stage.addChild(share)
-                createjs.Tween.get(start).to({alpha:1, y: start.y + 50}, 400, createjs.Ease.sineIn).call(addClickToStart)
-                createjs.Tween.get(share).to({alpha:1, y: share.y + 50}, 400, createjs.Ease.sineIn).call(addClickToStart)
-                
-            }
-            function removeStart() {
-                stage.removeChild(start)
-                stage.removeChild(share)
-            }
-            function addClickToStart() {
-                start.addEventListener("click", restart);
-                share.addEventListener("click", goShare);
-            }
-
-            function goShare() {
-                var countText
-                if (counter.text == 1) {
-                    countText = "1 point"
-                } else {
-                    countText = counter.text + " points"
+            if (this.state == this.states.FALL) {
+                if (this.flapStartPosition + 5 < this.stage.position) {
+                    this.state = this.states.FLY;
                 }
-                window.open("https://twitter.com/share?url=http%3A%2F%2Fflappybird.io&text=I scored " + countText +  " on HTML5 Flappy Bird.");
             }
 
-            function tick(event) {
-                var deltaS = event.delta/1000;
+            if (this.state == this.states.FLY && this.rotation < this.defaultRotation) {
+                this.rotation += 0.04;
+            }
 
-                var l = pipes.getNumChildren();
+        },
 
-                if (bird.y > (ground.y - 40)) {
-                    if (!dead) {
-                        die()
-                    }
-                    if (bird.y > (ground.y - 30)) {
-                        createjs.Tween.removeTweens ( bird )
-                    }
+        draw: function () {
+
+            this.stage.context.save();
+
+            this.stage.context.translate(this.x, this.y);
+
+            this.stage.context.rotate(this.rotation);
+            this.stage.context.translate(-(this.x), -(this.y));
+
+            this.stage.context.drawImage(
+                this.img,
+                this.flapState * this.width,
+                0,
+                this.width,
+                this.height,
+                this.x,
+                this.y,
+                this.width,
+                this.height
+            );
+
+            this.stage.context.restore();
+        },
+
+        flap: function () {
+            if (this.stage.state != this.stage.states.GAME_OVER) {
+                this.vertSpeed = -7;
+                this.flapStartPosition = this.stage.position;
+                this.state = this.states.RISE;
+            }
+        },
+
+        reset: function () {
+            this.x = 100;
+            this.y = this.stage.height / 2;
+            this.rotation = this.defaultRotation;
+            this.vertSpeed = 0;
+        }
+
+    });
+
+    flappybird.TOP = 0;
+    flappybird.BOTTOM = 1;
+
+    flappybird.Ground = Class.extend({
+        width: 780,
+        height: 253,
+
+        x: 0,
+        y: 0,
+
+        init: function (stage) {
+            this.stage = stage;
+            this.img = new Image();
+            this.img.src = 'assets/ground.png';
+            this.y = stage.height - this.height;
+        },
+
+        update: function () {
+
+            if (Math.abs(this.x) > this.width) {
+                this.x = 0;
+            }
+
+            this.x -= 3;
+
+        },
+
+        draw: function () {
+            var context = this.stage.context;
+            context.drawImage(this.img, this.x, this.y);
+            context.drawImage(this.img, this.width - Math.abs(this.x), this.y);
+        }
+
+    });
+
+    flappybird.Cloud = Class.extend({
+
+        width: 108,
+        height: 63,
+
+        init: function (stage, x, y, speed) {
+            this.stage = stage;
+            this.img = new Image();
+            this.img.src = 'assets/cloud.png';
+            this.x = x;
+            this.y = y;
+            this.speed = speed;
+        },
+
+        update: function () {
+
+            if (this.x > this.stage.width) {
+                this.x = -this.width;
+            }
+
+            this.x += this.speed;
+        },
+
+        draw: function () {
+            this.stage.context.drawImage(this.img, this.x, this.y);
+        }
+
+    });
+
+    flappybird.ScoreBoard = Class.extend({
+
+        init: function (stage) {
+            this.stage = stage;
+        },
+
+        update: function () {},
+
+        draw: function () {
+            var scoreText = "Score: " + this.stage.score;
+            this.stage.context.textAlign = "left";
+            this.stage.context.font = "16px Helvetica";
+            this.stage.context.fillStyle = "#000";
+            this.stage.context.fillText(scoreText, 12, 25);
+        }
+
+    });
+
+
+    flappybird.Game = Class.extend({
+
+        width: 800,
+        height: 500,
+
+        position: 0,
+        score: 0,
+
+        pipeCreationRate: 100,
+        pipesHorizontalSpacing: 240,
+        pipesVerticalSpacing: 180,
+
+        states: {
+            WAIT: 0,
+            PLAYING: 1,
+            GAME_OVER: 2
+        },
+
+        init: function (options) {
+            this.canvas = options.canvas;
+            this.context = this.canvas.getContext("2d");
+            this.bird = new flappybird.Bird(this);
+            this.ground = new flappybird.Ground(this);
+            this.scoreboard = new flappybird.ScoreBoard(this);
+            this.clouds = [
+                new flappybird.Cloud(this, 100, 30, 0.1),
+                new flappybird.Cloud(this, 300, 60, 0.4),
+                new flappybird.Cloud(this, 500, 20, 0.4),
+                new flappybird.Cloud(this, 700, 30, 0.1),
+            ];
+            this.pipes = [];
+            this.passedPipes = [];
+            this.lastPipe = null;
+            this.state = this.states.WAIT;
+            this.canvas.addEventListener("click", this.onclick.bind(this));
+        },
+
+        createPipe: function () {
+            if (!this.lastPipe || this.lastPipe.x < (this.width - this.pipesHorizontalSpacing)) {
+
+                var positionX = this.width,
+                    pipeTop,
+                    pipeBottom,
+                    hTop,
+                    hBottom,
+                    order;
+
+                hTop = parseInt(Math.random() * (this.height / 2)) + 40;
+                hBottom = this.height - this.pipesVerticalSpacing - hTop;
+
+
+                pipeTop = new flappybird.Pipe(this, flappybird.TOP, positionX, hTop);
+                pipeBottom = new flappybird.Pipe(this, flappybird.BOTTOM, positionX, hBottom);
+
+                order = this.pipes.length + 1;
+
+                pipeTop.order = pipeBottom.order = order;
+
+                this.pipes.push(pipeTop);
+                this.pipes.push(pipeBottom);
+
+                this.lastPipe = pipeBottom;
+            }
+        },
+
+        handleCollision: function () {
+
+            if (this.bird.y < -100 || this.bird.y > this.height + 100) {
+                this.state = this.states.GAME_OVER;
+            }
+
+            for (var i in this.pipes) {
+                var pipe = this.pipes[i];
+
+                var collides = this.bird.x > pipe.x - (pipe.width/2)
+                            && this.bird.x < pipe.x + pipe.width
+                            && this.bird.y > pipe.y
+                            && this.bird.y < pipe.y + pipe.height;
+
+                if (collides) {
+                    this.state = this.states.GAME_OVER;
                 }
-                
-                if (!dead) {
-                    ground.x = (ground.x-deltaS*300) % ground.tileW;
-                }
-            
+            }
+        },
 
-                if (started && !dead) {
-                    if (pipeDelay == 0) {
-
-                        pipe = new createjs.Bitmap(loader.getResult("pipe"));
-                        pipe.x = w+600
-                        pipe.y = (ground.y - gap*2) * Math.random() + gap*1.5
-                        pipes.addChild(pipe);
-                        // createjs.Tween.get(pipe).to({x:0 - pipe.image.width}, 5100)
-
-                        pipe2 = new createjs.Bitmap(loader.getResult("pipe"));
-                        pipe2.scaleX = -1
-                        pipe2.rotation = 180
-                        pipe2.x = pipe.x //+ pipe.image.width
-                        pipe2.y = pipe.y - gap
-                        // createjs.Tween.get(pipe2).to({x:0 - pipe.image.width}, 5100)
-
-                        pipes.addChild(pipe2);
-
-                        pipeDelay = masterPipeDelay
-
-                    } else {
-                        pipeDelay = pipeDelay - 1
-                    }
-                    for(var i = 0; i < l; i++) {
-                        pipe = pipes.getChildAt(i);
-                        if (pipe) {
-                            if (true) { // tried replacing true with this, but it's off: pipe.x < bird.x + 92 && pipe.x > bird.x 
-                                var collision = ndgmr.checkRectCollision(pipe,bird,1,true)
-                                if (collision) {
-                                    if (collision.width > 8 && collision.height > 8) {
-                                        die()
-                                    }
-                                }
-                            }
-                            pipe.x = (pipe.x - deltaS*300);
-                            if (pipe.x <= 338 && pipe.rotation == 0 && pipe.name != "counted") {
-                                pipe.name = "counted" //using the pipe name to count pipes
-                                counter.text = counter.text + 1
-                                counterOutline.text = counterOutline.text + 1
-                            }
-                            if (pipe.x + pipe.image.width <= -pipe.w) { 
-                                pipes.removeChild(pipe)
-                            }
+        updateScore: function () {
+            if (this.state == this.states.PLAYING) {
+                for (var i in this.pipes) {
+                    var pipe = this.pipes[i];
+                    if (this.bird.x > pipe.x + pipe.width) {
+                        if (this.passedPipes.indexOf(pipe.order) == -1) {
+                            this.passedPipes.push(pipe.order);
+                            this.score++;
                         }
                     }
-                    if (counterShow) {
-                        counter.alpha = 1
-                        counterOutline.alpha = 1
-                        counterShow = false
-                    }
-
                 }
+            }
+        },
 
+        showGameOverScreen: function () {
+            this.context.fillStyle = "#000";
+            this.context.textAlign = "center";
+            this.context.font = "bold 30px helvetica";
+            this.context.fillText("GAME OVER", 400, 240);
+            this.context.fillText("SCORE: " + this.score, 400, 280);
+        },
 
+        update: function () {
 
-                if (startJump == true) {
-                    startJump = false
-                    bird.framerate = 60;
-                    bird.gotoAndPlay("fly");
-                    if (bird.roation < 0) {
-                        rotationDelta = (-bird.rotation - 20)/5
-                    } else {
-                        rotationDelta = (bird.rotation + 20)/5
-                    }
-                    if (bird.y < -200) {
-                        bird.y = -200
-                    }
-                    createjs
-                        .Tween
-                        .get(bird)
-                        .to({y:bird.y - rotationDelta, rotation: -20}, rotationDelta, createjs.Ease.linear) //rotate to jump position and jump bird
-                        .to({y:bird.y - jumpAmount, rotation: -20}, jumpTime - rotationDelta, createjs.Ease.quadOut) //rotate to jump position and jump bird
-                        .to({y:bird.y}, jumpTime, createjs.Ease.quadIn) //reverse jump for smooth arch
-                        .to({y:bird.y + 200, rotation: 90}, (380)/1.5, createjs.Ease.linear) //rotate back
-                        .call(diveBird) // change bird to diving position
-                        .to({y:ground.y - 30}, (h - (bird.y+200))/1.5, createjs.Ease.linear); //drop to the bedrock
-                }
+            this.position += 1;
 
-                
-                stage.update(event);
+            this.handleCollision();
+
+            this.updateScore();
+
+            this.ground.update();
+
+            this.bird.update();
+
+            this.scoreboard.update();
+
+            this.createPipe();
+
+            for (var cloud in this.clouds) {
+                this.clouds[cloud].update();
             }
 
-            
-        </script>
-</head>
-<body onload="init();">
-
-<div class="top filler"></div>
-<canvas id="testCanvas" width="768" height="1362"></canvas>
-<div class="bottom filler"></div>
-<div class="ad-container">
-<script type="text/javascript"><!--
-            amazon_ad_tag = "onon0d-20"; amazon_ad_width = "160"; amazon_ad_height = "600";//--></script>
-<script type="text/javascript" src="https://ir-na.amazon-adsystem.com/s/ads.js"></script>
-</div>
-<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-52f8d10a50a4080c"></script>
-<script type="text/javascript">
-          addthis.layers({
-            'theme' : 'light',
-            'share' : {
-              'position' : 'left',
-              'numPreferredServices' : 3
+            for (var pipe in this.pipes) {
+                this.pipes[pipe].update();
             }
-          });
-        </script>
+
+        },
+
+        draw: function () {
+
+            this.clear();
+
+            this.ground.draw();
+
+            for (var cloud in this.clouds) {
+                this.clouds[cloud].draw();
+            }
+
+            for (var pipe in this.pipes) {
+                this.pipes[pipe].draw();
+            }
+
+            this.bird.draw();
+
+            this.scoreboard.draw();
+
+            if (this.state == this.states.GAME_OVER) {
+                this.showGameOverScreen();
+            }
+
+        },
+
+        clear: function () {
+            this.context.fillStyle = "#d9ffff";
+            this.context.fillRect(0, 0, this.width, this.height)
+        },
+
+        onclick: function () {
+            if (this.state == this.states.WAIT) {
+                this.state = this.states.PLAYING;
+            }
+
+            if (this.state == this.states.GAME_OVER) {
+                this.reset();
+            }
+        },
+
+        reset: function () {
+            this.state = this.states.WAIT;
+            this.bird.reset();
+            this.score = 0;
+            this.position = 0;
+            this.pipes = [];
+            this.lastPipe = null;
+        },
+
+        loop: function () {
+            this.update();
+            this.draw();
+            (window.requestAnimationFrame || function (callback) {
+                setTimeout(callback, 1000 / 60)
+            })(this.loop.bind(this));
+        }
+
+    });
+
+
+    var game = new flappybird.Game({
+        canvas: document.getElementById("canvas")
+    });
+
+    game.loop();
+
+</script>
 </body>
 </html>
